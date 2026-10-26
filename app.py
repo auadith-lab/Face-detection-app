@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 import streamlit as st
 
-st.title("Face Detection Application")
+# Added person head icon to the left of the heading
+st.title("👤 Face Detection Application")
 st.write(
     "Upload an image to detect faces using OpenCV with adjustable sensitivity"
     " and detailed metrics."
@@ -24,7 +25,7 @@ def load_face_cascade():
 
 face_cascade = load_face_cascade()
 
-# Feature 1: Sensitivity / Confidence Sliders in the Sidebar
+# Sensitivity / Confidence Sliders in the Sidebar
 st.sidebar.header("Detection Settings")
 scale_factor = st.sidebar.slider(
     "Scale Factor",
@@ -60,6 +61,12 @@ if uploaded_file is not None:
 
   # Draw bounding boxes and labels on faces
   for i, (x, y, w, h) in enumerate(faces):
+    cv2.rectangle(image, (x, y), (x + w, x + h), (0, 255, 0), 2)  # Fixed rectangle coordinates below
+    # Let's make sure rectangle width and height are properly added: (x+w, y+h)
+    
+  # Let's ensure the drawing loop is robust:
+  image = cv2.imdecode(file_bytes, 1) # re-initialize clean image copy for drawing
+  for i, (x, y, w, h) in enumerate(faces):
     cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cv2.putText(
         image,
@@ -78,7 +85,7 @@ if uploaded_file is not None:
       use_container_width=True,
   )
 
-  # Feature 2: Detailed Face Metrics Table
+  # Detailed Face Metrics Table
   if len(faces) > 0:
     st.subheader("📊 Detailed Face Metrics")
     metrics_data = []
