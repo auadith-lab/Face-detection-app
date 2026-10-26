@@ -4,33 +4,18 @@ import cv2
 import numpy as np
 import streamlit as st
 
-# Wide layout for dashboard experience
+# Set wide layout for a professional dashboard look
 st.set_page_config(
-    page_title="Face Detection Application",
+    page_title="Face Recognition and Detection",
     page_icon="👤",
     layout="wide",
 )
 
-# Custom styling for a colorful, professional UI look
+st.title("👤 Face Recognition and Detection")
 st.markdown(
-    """
-    <style>
-    .stMetric {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 10px;
-        border-radius: 8px;
-    }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
-
-# Heading changed back as requested
-st.title("👤 Face Detection Application")
-st.markdown("### 🚀 Advanced Computer Vision & Analytics Dashboard")
-st.write(
-    "Upload an image below to run high-performance face detection with"
-    " tunable sensitivity, privacy blurring, and exportable analytics."
+    "Upload an image to perform high-precision computer vision face detection"
+    " with adjustable parameters, privacy blurring, metrics breakdown, and"
+    " data export capabilities."
 )
 
 
@@ -107,17 +92,17 @@ if uploaded_file is not None:
           2,
       )
 
-  # KPI Summary Metrics Cards with colorful styling
+  # KPI Summary Metrics Cards
   col1, col2, col3 = st.columns(3)
   with col1:
-    st.metric(label="👥 Faces Detected", value=len(faces))
+    st.metric(label="Faces Detected", value=len(faces))
   with col2:
-    st.metric(label="📐 Image Resolution", value=f"{w_orig} x {h_orig} px")
+    st.metric(label="Image Resolution", value=f"{w_orig} x {h_orig} px")
   with col3:
     status_text = (
-        "🔒 Privacy Blur Active" if blur_faces else "🟩 Bounding Boxes Active"
+        "Privacy Blur Active" if blur_faces else "Bounding Boxes Active"
     )
-    st.metric(label="⚡ Operation Mode", value=status_text)
+    st.metric(label="Operation Mode", value=status_text)
 
   st.markdown("---")
 
@@ -126,4 +111,46 @@ if uploaded_file is not None:
   st.image(
       processed_rgb,
       caption=f"Processed Output — {len(faces)} face(s) identified",
-      use_
+      use_container_width=True,
+  )
+
+  # Download Button for Processed Image
+  success_encoded, buffer = cv2.imencode(".jpg", processed_image)
+  if success_encoded:
+    st.download_button(
+        label="📥 Download Processed Image",
+        data=buffer.tobytes(),
+        file_name="processed_face_detection.jpg",
+        mime="image/jpeg",
+    )
+
+  # Detailed Face Metrics Table & CSV Export
+  if len(faces) > 0:
+    st.subheader("📊 Detailed Face Coordinates & Metrics")
+    metrics_data = []
+    csv_rows = ["Face_ID,X_Coordinate,Y_Coordinate,Width,Height"]
+    for i, (x, y, w, h) in enumerate(faces):
+      metrics_data.append({
+          "Face #": i + 1,
+          "X Coordinate": x,
+          "Y Coordinate": y,
+          "Width (px)": w,
+          "Height (px)": h,
+      })
+      csv_rows.append(f"{i+1},{x},{y},{w},{h}")
+
+    st.table(metrics_data)
+
+    # CSV Download Button
+    csv_data = "\n".join(csv_rows)
+    st.download_button(
+        label="📥 Export Metrics Report as CSV",
+        data=csv_data,
+        file_name="face_metrics_report.csv",
+        mime="text/csv",
+    )
+  else:
+    st.info(
+        "No faces detected with current settings. Try lowering the Min Neighbors"
+        " slider in the sidebar!"
+    )
